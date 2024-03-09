@@ -9,28 +9,35 @@ chat_gpt = APIRouter()
 
 @chat_gpt.post("/create_glossary")
 async def create_glossary_with_chat_gpt(text: str,
-                                        prompt_language: Language | None = None) -> Glossary | str:
+                                        prompt_language: Language | None = None) -> Glossary:
 
-    if prompt_language is None:
-        prompt_language = await detect_language(text)
+    text_pieces = await split_text_if_it_is_too_long(text)
+    all_glossary_parts = []
 
-    if prompt_language == Language.ru:
-        d = {"messages": [{"role": "system", "content": f"{RUSSIAN_SYSTEM_PROMPT}"},
-                          {"role": "user", "content": f"{RUSSIAN_USER_PROMPT} <text>{text}</text>"}]}
-    else:
-        d = {"messages": [{"role": "system", "content": f"{ENGLISH_SYSTEM_PROMPT}"},
-                          {"role": "user", "content": f"{ENGLISH_USER_PROMPT} <text>{text}</text>"}]}
+    for text_piece in text_pieces:
 
-    response = OPENAI_CLIENT.chat.completions.create(
-        model=OPENAI_MODEL_NAME,
-        messages=d['messages']
-    )
+        if prompt_language is None:
+            prompt_language = await detect_language(text)
 
-    content = response.choices[0].message.content
+        if prompt_language == Language.ru:
+            d = {"messages": [{"role": "system", "content": f"{RUSSIAN_SYSTEM_PROMPT}"},
+                              {"role": "user", "content": f"{RUSSIAN_USER_PROMPT} <text>{text_piece}</text>"}]}
+        else:
+            d = {"messages": [{"role": "system", "content": f"{ENGLISH_SYSTEM_PROMPT}"},
+                              {"role": "user", "content": f"{ENGLISH_USER_PROMPT} <text>{text_piece}</text>"}]}
 
-    print(content)
+        response = OPENAI_CLIENT.chat.completions.create(
+            model=OPENAI_MODEL_NAME,
+            messages=d['messages']
+        )
 
-    glossary_parts = await turn_str_to_glossary_parts(content)
-    glossary = await turn_glossary_parts_to_glossary(glossary_parts)
+        content = response.choices[0].message.content
+
+        print(content)
+
+        glossary_parts = await turn_str_to_glossary_parts(content)
+        all_glossary_parts.extend(glossary_parts)
+
+    glossary = await turn_glossary_parts_to_glossary(all_glossary_parts)
 
     return glossary
