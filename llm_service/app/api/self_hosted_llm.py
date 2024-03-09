@@ -1,7 +1,6 @@
 from typing import Callable, Optional
 from fastapi import APIRouter
 import torch
-import transformers
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, pipeline
 
 from llm_service.app.api.utils import *
@@ -11,7 +10,7 @@ from llm_service.app.config import HF_MODEL_NAME
 HF_PIPELINE_OBJ: Optional[Callable] = None
 
 
-def load_model() -> Optional[Callable]:
+async def load_model() -> Optional[Callable]:
     try:
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
@@ -21,7 +20,7 @@ def load_model() -> Optional[Callable]:
 
         model = AutoModelForCausalLM.from_pretrained(
             HF_MODEL_NAME,
-            quantization_config=bnb_config,
+            quantization_config=bnb_config if torch.cuda.is_available() else None,
             torch_dtype=torch.bfloat16,
             device_map="auto",
             trust_remote_code=True,
@@ -46,21 +45,21 @@ def load_model() -> Optional[Callable]:
 
 def init_hf_pipeline_obj():
     global HF_PIPELINE_OBJ
-    HF_PIPELINE_OBJ = load_model()
+    HF_PIPELINE_OBJ = await load_model()
 
 
 self_hosted_llm = APIRouter(on_startup=[init_hf_pipeline_obj])
 
 
-def wrap_message_as_prompt(message: str) -> str:  # обертка для промпта, см. карточку модели HF_MODEL_NAME
+async def wrap_message_as_prompt(message: str) -> str:  # обертка для промпта, см. карточку модели HF_MODEL_NAME
     return f"GPT4 Correct User: {message}<|end_of_turn|>GPT4 Correct Assistant: "
 
 
-def post_process_generated_text(text: str) -> str:
+async def post_process_generated_text(text: str) -> str:
     return text.split('GPT4 Correct Assistant:')[-1]
 
 
-def generate_answer(prompt: str) -> str:
+async def generate_answer(prompt: str) -> str:
     if HF_PIPELINE_OBJ is not None:
         sequences = HF_PIPELINE_OBJ(
             prompt,
@@ -71,7 +70,7 @@ def generate_answer(prompt: str) -> str:
             top_p=0.95,
             num_return_sequences=1,
         )
-        post_processed = post_process_generated_text(sequences[0]['generated_text'])
+        post_processed = await post_process_generated_text(sequences[0]['generated_text'])
         return post_processed
     return ""
 
@@ -93,8 +92,12 @@ async def create_glossary_with_self_hosted_llm(text: str,
         else:
             message = f"{ENGLISH_USER_PROMPT} <text>{text_piece}</text>"
 
-        prompt = wrap_message_as_prompt(message)
-        content = generate_answer(prompt)
+        prompt = await wrap_message_as_prompt(message)
+
+        try:
+            content = await generate_answer(prompt)
+        except Exception:  # There could be many reasons, especially maximum sequence length
+            content = ""
 
         print(content)
 

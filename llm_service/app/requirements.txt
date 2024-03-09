@@ -5,7 +5,7 @@ python-dotenv~=1.0.1
 openai==1.2.4
 pydantic~=2.6.3
 langdetect~=1.0.9
-accelerate==0.26.1
-bitsandbytes==0.42.0
+accelerate==0.27.2
+bitsandbytes==0.43.0
 transformers==4.37.0
 torch==2.1.2
