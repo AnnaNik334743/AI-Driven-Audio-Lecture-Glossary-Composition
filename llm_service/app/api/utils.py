@@ -38,10 +38,11 @@ async def turn_str_to_glossary_parts(glossary_parts: str,
     glossary_parts = re.sub('```', '', re.sub('```json', '', glossary_parts)).strip()
     glossary_parts = re.sub('определение', 'definition', re.sub('термин', 'term', glossary_parts))
 
-    if glossary_parts[0] != '[':
-        glossary_parts = '[' + glossary_parts
-    if glossary_parts[-1] != ']':
-        glossary_parts = glossary_parts + ']'
+    if len(glossary_parts):
+        if glossary_parts[0] != '[':
+            glossary_parts = '[' + glossary_parts
+        if glossary_parts[-1] != ']':
+            glossary_parts = glossary_parts + ']'
 
     try:
         glossary_parts_list = eval(glossary_parts)

@@ -8,6 +8,8 @@ load_dotenv()
 HOST = os.getenv('HOST')
 PORT = os.getenv('PORT')
 
+HF_MODEL_NAME = os.getenv('HF_MODEL_NAME')
+
 OPENAI_API_KEY = os.getenv('OPEN_API_KEY')
 OPENAI_MODEL_NAME = os.getenv('OPENAI_MODEL_NAME')
 
