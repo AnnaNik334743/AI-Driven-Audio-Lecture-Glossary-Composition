@@ -9,19 +9,22 @@ class Language(Enum):
     en = 'en'
 
 
-async def detect_language(text: str) -> Language:
+async def detect_language(text: str, pre_detected: str | None) -> Language:
     try:
-        lang = langdetect.detect(text)
-        return Language(lang)
-    except ValueError:
-        return Language('en')
+        return Language(pre_detected)
+    except Exception as e:
+        try:
+            lang = langdetect.detect(text)
+            return Language(lang)
+        except Exception as e:
+            return Language('en')
 
 
 def split_list_into_sublists(lst: list, n: int, overlap_length: int = 0) -> list:
     sublists = []
     i = 0
     while i < len(lst):
-        sublist = lst[i:i+n]
+        sublist = lst[i:i + n]
         sublists.append(sublist)
         if i + n >= len(lst):
             break
@@ -37,7 +40,6 @@ async def split_text_if_it_is_too_long(text: str, chunk_size_in_words: int = 512
 async def turn_str_to_glossary_parts(glossary_parts: str,
                                      remove_too_long_terms: bool = True,
                                      too_long_terms_n_words: int = 5) -> list[GlossaryItem]:
-
     glossary_parts = re.sub('```', '', re.sub('```json', '', glossary_parts)).strip()
     glossary_parts = re.sub('определение', 'definition', re.sub('термин', 'term', glossary_parts))
 

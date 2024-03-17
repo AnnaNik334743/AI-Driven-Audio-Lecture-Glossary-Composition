@@ -8,23 +8,18 @@ app = FastAPI()
 
 class LLM(Enum):
     chat_gpt = 'chat_gpt'
-    self_hosted = 'self_hosted'
+    self_hosted_llm = 'self_hosted_llm'
 
 
 async def transcribe(youtube_link: str) -> str:
     transcribation = requests.post('http://127.0.0.1:8001/api/asr/transcribe_file',
-                         params={'youtube_link': youtube_link}).json()
+                                   params={'youtube_link': youtube_link}).json()
     return transcribation['transcript']
 
 
 async def compose_glossary(text: str, llm_type: LLM) -> dict:
     try:
-        if llm_type == LLM.chat_gpt:
-            glossary = requests.post('http://127.0.0.1:8002/api/chat_gpt/create_glossary',
-                                     params={'text': text}).json()
-        else:
-            glossary = requests.post('http://127.0.0.1:8002/api/self_hosted_llm/create_glossary',
-                                     params={'text': text}).json()
+        glossary = requests.post(f'http://127.0.0.1:8002/api/{llm_type.value}/create_glossary', params={'text': text}).json()
     except Exception as e:
         glossary = {'message': 'We are sorry, something has gone wrong :(', 'error': e}
     return glossary
@@ -32,8 +27,8 @@ async def compose_glossary(text: str, llm_type: LLM) -> dict:
 
 @app.post("/get_glossary")
 async def get_glossary(youtube_link: str, llm_type: LLM) -> dict:
-    transcribation = await transcribe(youtube_link)
-    glossary = await compose_glossary(transcribation, llm_type)
+    transcription = await transcribe(youtube_link)
+    glossary = await compose_glossary(transcription, llm_type)
     return glossary
 
 
