@@ -4,13 +4,13 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, pipeline
 
 from llm_service.app.api.utils import *
-from llm_service.app.api.prompts import RUSSIAN_USER_PROMPT, ENGLISH_USER_PROMPT
+from llm_service.app.api.prompts import PROMPTS
 from llm_service.app.config import HF_MODEL_NAME
 
 HF_PIPELINE_OBJ: Optional[Callable] = None
 
 
-async def load_model() -> Optional[Callable]:
+def load_model() -> Optional[Callable]:
     try:
         bnb_config = BitsAndBytesConfig(
             load_in_4bit=True,
@@ -45,7 +45,7 @@ async def load_model() -> Optional[Callable]:
 
 def init_hf_pipeline_obj():
     global HF_PIPELINE_OBJ
-    HF_PIPELINE_OBJ = await load_model()
+    HF_PIPELINE_OBJ = load_model()
 
 
 self_hosted_llm = APIRouter(on_startup=[init_hf_pipeline_obj])
@@ -78,20 +78,14 @@ async def generate_answer(prompt: str) -> str:
 @self_hosted_llm.post("/create_glossary")
 async def create_glossary_with_self_hosted_llm(text: str,
                                                prompt_language: Language | None = None) -> Glossary:
+    prompt_language = await detect_language(text, pre_detected=prompt_language)
 
     text_pieces = await split_text_if_it_is_too_long(text)
     all_glossary_parts = []
 
     for text_piece in text_pieces:
 
-        if prompt_language is None:
-            prompt_language = await detect_language(text)
-
-        if prompt_language == Language.ru:
-            message = f"{RUSSIAN_USER_PROMPT} <text>{text_piece}</text>"
-        else:
-            message = f"{ENGLISH_USER_PROMPT} <text>{text_piece}</text>"
-
+        message = f"{PROMPTS[prompt_language.value]['user']} <text>{text_piece}</text>"
         prompt = await wrap_message_as_prompt(message)
 
         try:
