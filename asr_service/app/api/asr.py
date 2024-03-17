@@ -2,7 +2,7 @@ import whisper
 from api.asr_utils import download_wav_youtube, whisper_transcribe_file
 from fastapi import APIRouter
 
-from schema import Transcript
+from api.schema import Transcript
 
 asr = APIRouter()
 # should load it from config
