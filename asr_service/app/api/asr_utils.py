@@ -13,7 +13,7 @@ def download_wav_youtube(video_link, output_name="lecture.wav") -> None:
     os.rename(downloaded_file, output_name)
 
 
-def whisper_transcribe_file(model, path_to_mp3_file="lecture.wav", delete=True):
+def whisper_transcribe_file(model, path_to_mp3_file="lecture.wav", delete=True) -> str:
     transcription = model.transcribe(path_to_mp3_file, language="ru", verbose=False)
 
     print("DONE:", transcription)

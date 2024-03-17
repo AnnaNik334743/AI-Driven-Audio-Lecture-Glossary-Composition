@@ -1,2 +1,5 @@
 fastapi[all]
 uvicorn==0.27.1
+pytube==15.0.0
+pydub
+git+https://github.com/openai/whisper.git
