@@ -45,7 +45,7 @@ async def load_model() -> Optional[Callable]:
 
 def init_hf_pipeline_obj():
     global HF_PIPELINE_OBJ
-    HF_PIPELINE_OBJ = await load_model()
+    HF_PIPELINE_OBJ = load_model()
 
 
 self_hosted_llm = APIRouter(on_startup=[init_hf_pipeline_obj])
@@ -78,14 +78,13 @@ async def generate_answer(prompt: str) -> str:
 @self_hosted_llm.post("/create_glossary")
 async def create_glossary_with_self_hosted_llm(text: str,
                                                prompt_language: Language | None = None) -> Glossary:
+    if prompt_language is None:
+        prompt_language = await detect_language(text)
 
     text_pieces = await split_text_if_it_is_too_long(text)
     all_glossary_parts = []
 
     for text_piece in text_pieces:
-
-        if prompt_language is None:
-            prompt_language = await detect_language(text)
 
         if prompt_language == Language.ru:
             message = f"{RUSSIAN_USER_PROMPT} <text>{text_piece}</text>"

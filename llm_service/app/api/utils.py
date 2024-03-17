@@ -10,8 +10,11 @@ class Language(Enum):
 
 
 async def detect_language(text: str) -> Language:
-    lang = langdetect.detect(text)
-    return Language(lang)
+    try:
+        lang = langdetect.detect(text)
+        return Language(lang)
+    except ValueError:
+        return Language('en')
 
 
 def split_list_into_sublists(lst: list, n: int, overlap_length: int = 0) -> list:
