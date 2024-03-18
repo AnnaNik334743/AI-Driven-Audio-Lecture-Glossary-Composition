@@ -20,7 +20,7 @@ async def detect_language(text: str, pre_detected: str | None) -> Language:
             return Language('en')
 
 
-def split_list_into_sublists(lst: list, n: int, overlap_length: int = 0) -> list:
+async def split_list_into_sublists(lst: list, n: int, overlap_length: int = 0) -> list:
     sublists = []
     i = 0
     while i < len(lst):
@@ -34,7 +34,7 @@ def split_list_into_sublists(lst: list, n: int, overlap_length: int = 0) -> list
 
 async def split_text_if_it_is_too_long(text: str, chunk_size_in_words: int = 512, overlap: int = 0) -> list[str]:
     words = text.split()  # you can change it to a better tokenizer (or segmenter) if needed
-    return [' '.join(subwords) for subwords in split_list_into_sublists(words, chunk_size_in_words, overlap)]
+    return [' '.join(subwords) for subwords in await split_list_into_sublists(words, chunk_size_in_words, overlap)]
 
 
 async def turn_str_to_glossary_parts(glossary_parts: str,
@@ -70,3 +70,12 @@ async def turn_glossary_parts_to_glossary(glossary_parts: list[GlossaryItem]) ->
         return Glossary(glossary=glossary_parts)
     except Exception:
         return Glossary(glossary=[])
+
+
+async def post_process(glossary_parts: list[GlossaryItem], n: int = 2):
+    # удалить термины, если их названия дублируются и они находятся в рамках какого-то окна
+    final_list = []
+    for part in glossary_parts:
+        if part.term.lower() not in [val.term.lower() for val in final_list[max(0, -n):]]:
+            final_list.append(part)
+    return final_list

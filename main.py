@@ -12,14 +12,17 @@ class LLM(Enum):
 
 
 async def transcribe(youtube_link: str) -> str:
-    transcribation = requests.post('http://127.0.0.1:8001/api/asr/transcribe_file',
-                                   params={'youtube_link': youtube_link}).json()
-    return transcribation['transcript']
+    transcription = requests.post('http://127.0.0.1:8001/api/asr/transcribe_file',
+                                  params={'youtube_link': youtube_link}).json()
+    return transcription['transcript']
 
 
 async def compose_glossary(text: str, llm_type: LLM) -> dict:
     try:
-        glossary = requests.post(f'http://127.0.0.1:8002/api/{llm_type.value}/create_glossary', params={'text': text}).json()
+        all_glossary_parts = requests.post(f'http://127.0.0.1:8002/api/{llm_type.value}/create_glossary_parts',
+                                           params={'text': text}).json()
+        glossary = requests.post(f'http://127.0.0.1:8002/api/{llm_type.value}/create_full_glossary_from_parts',
+                                 json=all_glossary_parts).json()
     except Exception as e:
         glossary = {'message': 'We are sorry, something has gone wrong :(', 'error': e}
     return glossary
