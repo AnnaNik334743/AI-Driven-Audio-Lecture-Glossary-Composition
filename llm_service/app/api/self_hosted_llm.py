@@ -75,9 +75,9 @@ async def generate_answer(prompt: str) -> str:
     return ""
 
 
-@self_hosted_llm.post("/create_glossary")
-async def create_glossary_with_self_hosted_llm(text: str,
-                                               prompt_language: Language | None = None) -> Glossary:
+@self_hosted_llm.post("/create_glossary_parts")
+async def create_glossary_parts_with_self_hosted_llm(text: str,
+                                                     prompt_language: Language | None = None) -> list[GlossaryItem]:
     prompt_language = await detect_language(text, pre_detected=prompt_language)
 
     text_pieces = await split_text_if_it_is_too_long(text)
@@ -98,6 +98,19 @@ async def create_glossary_with_self_hosted_llm(text: str,
         glossary_parts = await turn_str_to_glossary_parts(content)
         all_glossary_parts.extend(glossary_parts)
 
-    glossary = await turn_glossary_parts_to_glossary(all_glossary_parts)
+    return all_glossary_parts
 
+
+@self_hosted_llm.post("/create_full_glossary_from_parts")
+async def create_glossary_from_parts_with_self_hosted_llm(all_glossary_parts: list[GlossaryItem]) -> Glossary:
+    all_glossary_parts = await post_process(all_glossary_parts)
+    glossary = await turn_glossary_parts_to_glossary(all_glossary_parts)
+    return glossary
+
+
+@self_hosted_llm.post("/create_full_glossary_from_text")
+async def create_glossary_with_self_hosted_llm(text: str, prompt_language: Language | None = None) -> Glossary:
+    all_glossary_parts = await create_glossary_parts_with_self_hosted_llm(text=text, prompt_language=prompt_language)
+    all_glossary_parts = await post_process(all_glossary_parts)
+    glossary = await create_glossary_from_parts_with_self_hosted_llm(all_glossary_parts)
     return glossary
