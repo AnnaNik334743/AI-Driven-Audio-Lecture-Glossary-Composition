@@ -5,15 +5,22 @@ from pydub import AudioSegment
 from pytube import YouTube
 
 
-def download_wav_youtube(video_link, output_name="lecture.wav") -> None:
+def download_and_convert_audio(video_link, output_name="lecture.mp3") -> None:
     yt = YouTube(video_link)
 
     video = yt.streams.filter(only_audio=True).first()
     downloaded_file = video.download()
-    os.rename(downloaded_file, output_name)
+
+    audio = AudioSegment.from_file(downloaded_file)
+    audio = audio.set_channels(1)  # Set to mono channel
+    audio = audio.set_frame_rate(16000)  # Set sample rate to 16000 Hz
+
+    audio.export(output_name, format="mp3")
+
+    os.remove(downloaded_file)
 
 
-def whisper_transcribe_file(model, path_to_mp3_file="lecture.wav", delete=True) -> str:
+def whisper_transcribe_file(model, path_to_mp3_file="lecture.mp3", delete=True) -> str:
     transcription = model.transcribe(path_to_mp3_file, language="ru", verbose=False)
 
     print("DONE:", transcription)
