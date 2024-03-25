@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <input type="file" ref="fileInput" accept=".mp3,.mp4,.wav">
-    <v-btn @click="uploadFile">Upload File</v-btn>
+  <div class="input-container">
+    <input type="file" ref="fileInput" accept=".mp3,.mp4,.wav" class="file-input">
+    <button @click="uploadFile" class="submit-button">Загрузить файл</button>
   </div>
 </template>
 
@@ -20,7 +20,7 @@ export default {
           body: formData
         });
 
-        this.$emit('file-uploaded', response);
+        this.$emit('file-uploaded', response);  // триггер события в App.vue
       } catch (error) {
         console.error('Error:', error);
       }

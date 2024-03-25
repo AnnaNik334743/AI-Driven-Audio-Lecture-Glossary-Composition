@@ -8,53 +8,65 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],  #
+    allow_origins=["http://localhost:8080"],  # местонахождение фронтенда
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
-class Text(BaseModel):
+class Text(BaseModel):  # без подобной валидации данных вы получите 422 Error при прокидывании строки с фронта
     text: str
 
 
 @app.post("/process_link/")
 async def process_link(text: Text):
-    async def generate_chunks():
-        # Mockup for streaming text chunks
-        texts = ["Chunk 11", "Chunk 21", "Chunk 31"]
-        for text in texts:
-            yield text.encode()
-            await asyncio.sleep(1)
+    # здесь будет логика для скачивания аудиодорожки по ссылке из text
 
-    return StreamingResponse(generate_chunks(), media_type="text/plain")
+    async def generate_chunks():
+        # здесь аудио по чанкам будет транскрибироваться ИИ-моделью и возвращаться текстовыми чанками
+        chunks = ["кусочек_1_по_ссылке\n", "кусочек_2_по_ссылке\n", "кусочек_3_по_ссылке\n", "кусочек_4_по_ссылке\n"]
+        for chunk in chunks:
+            yield chunk.encode()  # функция - генератор
+            await asyncio.sleep(0.5)  # имитация скорости, с которой обрабатывается каждый кусочек.
+            # asincio.sleep() не блокирует выполнение функции в отличие от time.sleep()
+
+    return StreamingResponse(generate_chunks(), media_type="text/plain")  # ответ возвращается текстовыми чанками
 
 
 @app.post("/upload_file/")
 async def upload_file(file: UploadFile = File(...)):
-    async def generate_chunks():
-        # Mockup for streaming text chunks
-        texts = ["Chunk 12", "Chunk 22", "Chunk 32"]
-        for text in texts:
-            yield text.encode()
-            await asyncio.sleep(1)
+    # здесь будет логика для сохранения и дальнейшей обработки файла
 
-    return StreamingResponse(generate_chunks(), media_type="text/plain")
+    async def generate_chunks():
+        # здесь аудио по чанкам будет транскрибироваться ИИ-моделью и возвращаться текстовыми чанками
+        chunks = ["кусочек_1_из_файла\n", "кусочек_2_из_файла\n", "кусочек_3_из_файла\n", "кусочек_4_из_файла\n"]
+        for chunk in chunks:
+            yield chunk.encode()  # функция - генератор
+            await asyncio.sleep(0.5)  # имитация скорости, с которой обрабатывается каждый кусочек.
+            # asincio.sleep() не блокирует выполнение функции в отличие от time.sleep()
+
+    return StreamingResponse(generate_chunks(), media_type="text/plain")  # ответ возвращается текстовыми чанками
 
 
 @app.post("/generate_text_chunks/")
 async def generate_text_chunks(text: Text):
-    async def generate_letter_chunks(text: str):
-        yield (text + 'hello ').encode()
-        await asyncio.sleep(2)
-    return StreamingResponse(generate_letter_chunks(text.text), media_type="text/plain")
+    # имитация работы LLM - приходящий на вход текст каким-то образом обрабатывается
+    # исходим из предположения, что LLM всегда будет генерировать текст последовательно
+
+    async def generate_letter_chunks(letters: str):
+        for letter in letters:
+            yield (letter + ' ' if letter != '\n' else letter).encode()  # функция - генератор
+            await asyncio.sleep(0.05)  # имитация скорости, с которой обрабатывается каждый кусочек
+
+    return StreamingResponse(generate_letter_chunks(text.text), media_type="text/plain")  # ответ возвращается текстовыми чанками
 
 
 @app.post("/generate_file_from_text/")
 async def generate_file_from_text(text: Text):
+    # просто функция, записывающая текст в файл и возвращающая его на фронт
     filename = "text_file.txt"
-    with open(filename, "w") as file:
+    with open(filename, "w", encoding='utf-8') as file:
         file.write(text.text)
     return FileResponse(filename)
 
@@ -62,4 +74,4 @@ async def generate_file_from_text(text: Text):
 if __name__ == "__main__":
     import uvicorn
 
-    uvicorn.run(app, host="localhost", port=8001)
+    uvicorn.run(app, host="localhost", port=8001)  # у меня какие-то проблемы с 8000 портом, поэтому так

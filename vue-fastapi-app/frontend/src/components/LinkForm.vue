@@ -1,7 +1,7 @@
 <template>
-  <div>
-    <input v-model="link" type="text" placeholder="Enter URL">
-    <button @click="processLink">Process Link</button>
+  <div class="input-container">
+    <input v-model="link" type="text" placeholder="Enter YouTube URL" class="text-input">
+    <button @click="processLink" class="submit-button">Загрузить ссылку</button>
   </div>
 </template>
 
@@ -19,14 +19,12 @@ export default {
           const response = await fetch('http://localhost:8001/process_link/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: this.link })  // text is because you need to validate strings in fastapi...
+            body: JSON.stringify({ text: this.link })  // так по-тупому, потому что валидация на стороне бэка
           });
-          this.$emit('link-submitted', response);
+          this.$emit('link-submitted', response);  // триггер события в App.vue
         } catch (error) {
           console.error('Error:', error);
         }
-      } else {
-        // handle empty input case
       }
     }
   }
