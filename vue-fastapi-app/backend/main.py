@@ -29,7 +29,7 @@ async def process_link(text: Text):
         for chunk in chunks:
             yield chunk.encode()  # функция - генератор
             await asyncio.sleep(0.5)  # имитация скорости, с которой обрабатывается каждый кусочек.
-            # asincio.sleep() не блокирует выполнение функции в отличие от time.sleep()
+            # asyncio.sleep() не блокирует выполнение функции в отличие от time.sleep()
 
     return StreamingResponse(generate_chunks(), media_type="text/plain")  # ответ возвращается текстовыми чанками
 
@@ -44,7 +44,7 @@ async def upload_file(file: UploadFile = File(...)):
         for chunk in chunks:
             yield chunk.encode()  # функция - генератор
             await asyncio.sleep(0.5)  # имитация скорости, с которой обрабатывается каждый кусочек.
-            # asincio.sleep() не блокирует выполнение функции в отличие от time.sleep()
+            # asyncio.sleep() не блокирует выполнение функции в отличие от time.sleep()
 
     return StreamingResponse(generate_chunks(), media_type="text/plain")  # ответ возвращается текстовыми чанками
 

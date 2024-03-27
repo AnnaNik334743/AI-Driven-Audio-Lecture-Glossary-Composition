@@ -5,9 +5,12 @@
     <div class="form-item">
       <LinkForm @link-submitted="onLinkSubmitted" />
     </div>
-    <div class="form-item">
+
+    <!--
+     <div class="form-item">
       <FileUploadForm @file-uploaded="onFileUploaded" />
     </div>
+    -->
 
     <div class="streaming-container">
       <div class="streaming-output">
@@ -88,7 +91,7 @@ export default {
 
     async fetchLLMChunk(chunk) {
 
-      const LLMResponse = await fetch('http://localhost:8001/generate_text_chunks/', {
+      const LLMResponse = await fetch('http://localhost:8002/api/chat_gpt/create_glossary_parts/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: chunk })
