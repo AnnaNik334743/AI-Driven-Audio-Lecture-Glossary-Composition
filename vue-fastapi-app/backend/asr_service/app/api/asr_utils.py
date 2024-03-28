@@ -50,17 +50,18 @@ def split_mp3_into_chunks(input_file, chunk_duration=120, chunks_dir="output_chu
         chunk.export(output_file, format="mp3")
 
 
-def transcribe_audio_by_chunks(whisper_pipeline, input_file, chunk_duration=120, input_dir="output_chunks",
+async def transcribe_audio_by_chunks(whisper_pipeline, input_file, chunk_duration=120, input_dir="output_chunks",
                                delete_dir=True):
     split_mp3_into_chunks(input_file, chunk_duration)
     chunk_files = os.listdir(input_dir)
 
     for ind, chunk_file in enumerate(chunk_files):
-        # динамически удаляем предыдущие чанки
-        if ind > 0 and delete_dir:
-            shutil.rmtree(os.path.join(input_dir, chunk_files[ind - 1]), ignore_errors=True)
+        # # динамически удаляем предыдущие чанки
+        # if ind > 0 and delete_dir:
+        #     shutil.rmtree(os.path.join(input_dir, chunk_files[ind - 1]), ignore_errors=True)
 
         segment = whisper_transcribe_file(whisper_pipeline, path_to_mp3_file=os.path.join(input_dir, chunk_file))
+
         # в конце убираем всю директорию
         if ind == len(chunk_files) - 1 and delete_dir:
             shutil.rmtree(input_dir, ignore_errors=True)

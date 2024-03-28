@@ -1,9 +1,9 @@
 import torch
-from asr_utils import download_and_convert_audio, transcribe_audio_by_chunks, whisper_transcribe_file
-from schema import Text, Transcript
+from api.asr_utils import download_and_convert_audio, transcribe_audio_by_chunks, whisper_transcribe_file
+from api.schema import Text, Transcript
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import StreamingResponse
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline, WhisperProcessor
 
 asr = APIRouter()
 
@@ -24,12 +24,14 @@ whisper_pipeline = pipeline(
     model=model,
     tokenizer=processor.tokenizer,
     feature_extractor=processor.feature_extractor,
-    max_new_tokens=128,
+    max_new_tokens=256,
     chunk_length_s=30,
     batch_size=16,
     return_timestamps=True,
     torch_dtype=torch_dtype,
     device=device,
+    generate_kwargs={"task": "transcribe", "language": "russian"}
+
 )
 
 
@@ -52,7 +54,9 @@ async def transcribe_file(youtube_link) -> Transcript:
 
 
 @asr.post("/transcribe_file_chunks")
-async def transcribe_file_chunks(youtube_link):
+async def transcribe_file_chunks(text: Text):
+    youtube_link = text.text
+    
     if not youtube_link.startswith("https://www.youtube.com/"):
         raise HTTPException(status_code=400, detail="Некорректная ссылка")
 

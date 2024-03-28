@@ -7,7 +7,7 @@ app = FastAPI(openapi_url="/api/asr/openapi.json", docs_url="/api/asr/docs")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8081"],  # местонахождение фронтенда
+    allow_origins=["http://localhost:8080"],  # местонахождение фронтенда
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

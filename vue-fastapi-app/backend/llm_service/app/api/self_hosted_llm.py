@@ -6,7 +6,7 @@ from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig
 from api.schema import Text, GlossaryItem, Glossary
 from api.utils import *
 from api.prompts import PROMPTS
-from llm_service.app.config import HF_MODEL_NAME
+from config import HF_MODEL_NAME
 
 HF_PIPELINE_OBJ: Optional[Callable] = None
 

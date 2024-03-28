@@ -81,6 +81,7 @@ export default {
         }
 
         const newChunk = decoder.decode(value, { stream: true });  // забираем чанк с бэка
+        console.log(newChunk);
         this.streamingChunks.push(newChunk);  // обновляем содержимое общего массива чанков
 
         // как только новый кусочек пришел, кидаем его на обработку LLM. дальнейшая судьба кусочка в этой функции нас
@@ -90,12 +91,15 @@ export default {
     },
 
     async fetchLLMChunk(chunk) {
+      console.log('hello world');
 
       const LLMResponse = await fetch('http://localhost:8002/api/chat_gpt/create_glossary_parts/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: chunk })
       });  // кидаем запрос на бэк
+
+      console.log('we are ok');
 
       const LLMReader = LLMResponse.body.getReader();  // как и в предыдущей функции, читаем Streaming Response
       const decoder = new TextDecoder();
@@ -128,7 +132,7 @@ export default {
     async generateFilesFromText() {
       try {
         const streamingText = this.streamingChunks.join('');
-        const streamingFileResponse = await axios.post('http://localhost:8001/generate_file_from_text/', { text: streamingText });
+        const streamingFileResponse = await axios.post('http://localhost:8003/generate_file_from_text/', { text: streamingText });
         this.streamingFileDownloadUrl = window.URL.createObjectURL(new Blob([streamingFileResponse.data]));
         } catch (error) {
         console.error('Error generating files from text:', error);
@@ -138,7 +142,7 @@ export default {
     async generateLLMFilesFromText() {
       try {
         const LLMStreamingText = this.LLMStreamingChunks.join('');
-        const LLMStreamingFileResponse = await axios.post('http://localhost:8001/generate_file_from_text/', { text: LLMStreamingText });
+        const LLMStreamingFileResponse = await axios.post('http://localhost:8003/generate_file_from_text/', { text: LLMStreamingText });
         this.LLMStreamingFileDownloadUrl = window.URL.createObjectURL(new Blob([LLMStreamingFileResponse.data]));
       } catch (error) {
         console.error('Error generating files from text:', error);

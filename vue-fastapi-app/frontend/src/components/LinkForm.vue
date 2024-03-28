@@ -16,7 +16,7 @@ export default {
     async processLink() {
       if (this.link.trim() !== '') {
         try {
-          const response = await fetch('http://localhost:8001/process_link/', {
+          const response = await fetch('http://localhost:8001/api/asr/transcribe_file_chunks/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: this.link })  // так по-тупому, потому что валидация на стороне бэка

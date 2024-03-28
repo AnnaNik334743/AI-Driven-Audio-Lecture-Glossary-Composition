@@ -3,7 +3,7 @@ from fastapi.responses import StreamingResponse
 from api.schema import *
 from api.utils import *
 from api.prompts import PROMPTS
-from llm_service.app.config import OPENAI_CLIENT, OPENAI_MODEL_NAME
+from config import OPENAI_CLIENT, OPENAI_MODEL_NAME
 from dotenv import load_dotenv
 
 load_dotenv()
